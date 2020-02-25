@@ -141,8 +141,8 @@ class crims_hitman():
         self.clubs()
 
 if __name__ == "__main__":
-    login = "pedalek69" #// put your login here
-    password = "maczuga" #// put your password here
+    login = "login" #// put your login here
+    password = "password" #// put your password here
     try:
         app = crims_hitman(login, password)
         # app.log_in()
