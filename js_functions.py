@@ -104,8 +104,9 @@ js_main_requests_pattern = """
                             const post_route = arguments[1]
                             const x_request = arguments[2]
                             const move = arguments[3]
-                            const restore = arguments[4]
+                           
 
+                            
                             $.ajax({
                             url: post_route,
                             type: 'POST',
@@ -115,19 +116,32 @@ js_main_requests_pattern = """
                             dataType: "json",
                             headers: {"x-request":x_request},
                             success: function (result) {
-                                window.location = move
-                                var id = 0
+                                if(move.length > 0){
+                                    window.location = move
+                                }
+                                const drugs = Array.from(result["nightclub"]["products"]["drugs"])
+                                const hookers = Array.from(result["nightclub"]["products"]["hookers"])
+                                
+                                var id = 0;
+                                var entrance = "";
 
-                                if(restore){
-                                    var e = Array.from(result["nightclub"]["products"]["drugs"])
-                                    if(e.length != 0){
-                                        id = e[0]["id"]
+                                if(drugs.length != 0){
+                                        id = drugs[0]["id"]
+                                        entrance = "drug"
                                     }
-                                    else{
-                                        id = result["nightclub"]["products"]["hookers"][0]["id"]
-                                    }
-                                    json["id"] = id
-                                    restore_hp(x_request, json)
+                                else{
+                                    id = hookers[0]["id"]
+                                    entrance = "hooker"
+                                }
+                               
+                                const hp_bar = document.querySelector("div.default-1CS8SFNfrzFfM38mxoY6af_0").offsetWidth
+                                const current_hp = Math.round(100*hp_bar / 128);
+
+                                if(current_hp < 50){
+                                    new_json = JSON.parse(json)
+                                    new_json.id = id
+                                    console.log(id)
+                                    restore_hp(x_request, JSON.stringify(new_json), entrance)
                                 }
                             },
                             error: function (result) {
@@ -135,9 +149,10 @@ js_main_requests_pattern = """
                             }
                         });
 
-                        function restore_hp(xreq, json_file){
+                        function restore_hp(xreq, json_file, entrance){
+                            console.log(json_file)
                             $.ajax({
-                                url: "https://www.thecrims.com/api/v1/nightclub",
+                                url: "https://www.thecrims.com/api/v1/nightclub/"+String(entrance),
                                 type: 'POST',
                                 data: json_file,
                                 processData: false,
@@ -145,10 +160,11 @@ js_main_requests_pattern = """
                                 dataType: "json",
                                 headers: {"x-request":xreq},
                                 success: function (result) {
-                                    var dummy = result;
+                                    console.log(result)
+                                    
                                 },
                                 error: function (result) {
-                                    var dummy = result;
+                                    console.log(result);
                                 }
                             });
                         }

@@ -13,6 +13,9 @@ class bypass:
         logs_itteration = randint(22,44)
        
         payload = {
+                "victim_id":f"{self.exit_key}",
+                "encountered_at":int(first_input_timestamp+str(randint(2400,3900))),
+                "created_at":int(first_input_timestamp+str(randint(4500,5900))),
                 "id":f"{self.exit_key}",
                 "reason":"Manual exit", #/// in case when clicking enter club
                 "exit_key":f"{self.exit_key}",
@@ -20,20 +23,27 @@ class bypass:
                 "input":[],
                 "input_counters":{"mousemove":randint(60,190), "mousedown":randint(1,3)},
                 "first_input_timestamp": int(first_input_timestamp+str(randint(2400,3900))),
-                "action_timestamp":int(first_input_timestamp+str(randint(2400,3900))),
+                "action_timestamp":int(first_input_timestamp+str(randint(4500,5900))),
             }
         if self.action == "normal": #/// in case of other requests
-            for element in ["id","reason", "exit_key", "e_at"]:
+            for element in ["victim_id","encountered_at","created_at","id","reason", "exit_key", "e_at"]:
                 del payload[element]
             payload["input_counters"]["mousemove"] = randint(970,1020)
             logs_itteration = 100
 
         elif self.action == "exit":
-            del payload["id"]
+            for element in ["victim_id","encountered_at","created_at","id"]:
+                del payload[element]
             
         elif self.action == "enter":
-            for element in ["reason", "exit_key", "e_at"]:
+            for element in ["victim_id","encountered_at","created_at","reason", "exit_key", "e_at"]:
                 del payload[element]
+
+        elif self.action == "kill":
+            for element in ["id","reason", "exit_key", "e_at"]:
+                del payload[element]
+            user_id = int(self.exit_key)
+            payload["victim_id"] = user_id
 
         for x in range(logs_itteration):
             first_input = randint(2400,3900)
