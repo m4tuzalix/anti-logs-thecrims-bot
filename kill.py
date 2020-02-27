@@ -9,6 +9,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.common.exceptions import StaleElementReferenceException
 from selenium.common.exceptions import TimeoutException
+
 from time import sleep
 from random import randint
 from bypass import bypass
@@ -22,7 +23,6 @@ class crims_hitman():
         self.login = login
         self.password = password
         # PROXY = "186.227.213.234:8080" # IP:PORT or HOST:PORT
-        # chrome_options = webdriver.ChromeOptions()
         # chrome_options.add_argument('--proxy-server=http://%s' % PROXY)
         self.browser = webdriver.Chrome("D:\crims\chromedriver.exe")
         self.browser.get("https://www.thecrims.com/")
@@ -36,6 +36,7 @@ class crims_hitman():
         login = self.browser.execute_script(js_request_login, self.login, self.password)
         sleep(3)
         self.alert_catcher("x_req")
+        
     
     def clubs(self):
         all_clubs = self.browser.execute_script(js_get_clubs, self.x_request)
@@ -84,7 +85,6 @@ class crims_hitman():
         #// sends the request to server
         self.browser.execute_script(js_main_requests_pattern, dumps(Logs), post_route, self.x_request, move)
         
-
     def thread_logs(self, route, action, arguments, *args):
         self.route = route
         self.action = action
@@ -110,48 +110,48 @@ class crims_hitman():
         from json import loads
         self.change_logs("/nightlife", "normal", "")
         people_to_avoid = ["Hitman","Padrino","Kingpin", "Godfather", "Top executive", "Mobster", "Desperado",  "Director", "Consigliere"]
-        
-        self.current_stamina = self.browser.find_element_by_xpath('//div[@class="text-center"]//div[@id="nightclub-singleassault-attack-18"]//div[@class="default-1CS8SFNfrzFfM38mxoY6af_0"]').value_of_css_property("width")
-        self.percent_stamina = round(100*float(self.current_stamina[:-2])/128)
-        exit_but = WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH,"//div[@id='page']//div[@id='content']//table[@id='content_table']//tbody//tr//td//div[@id='content_middle']//div[@class='content_style main-content ']//div[3]//div//button[@class='btn btn-inverse btn-large pull-right']")))
-        exit_but_id = exit_but.get_attribute("id")
-        if self.percent_stamina < 50:
-            self.restore(exit_but, exit_but_id)
-        else:
+        try:
+            self.current_stamina = self.browser.find_element_by_xpath('//div[@class="text-center"]//div[@id="nightclub-singleassault-attack-18"]//div[@class="default-1CS8SFNfrzFfM38mxoY6af_0"]').value_of_css_property("width")
+            self.percent_stamina = round(100*float(self.current_stamina[:-2])/128)
+            exit_but = WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.XPATH,"//div[@id='page']//div[@id='content']//table[@id='content_table']//tbody//tr//td//div[@id='content_middle']//div[@class='content_style main-content ']//div[3]//div//button[@class='btn btn-inverse btn-large pull-right']")))
+            exit_but_id = exit_but.get_attribute("id")
+            if self.percent_stamina < 50:
+                self.restore(exit_but, exit_but_id)
+            else:
+                middle = WebDriverWait(self.browser, 8).until(EC.visibility_of_element_located((By.XPATH, "//div[@id='content_middle']//div[@class='content_style main-content ']//div//div//ul[@class='unstyled inline user_list nightlife_user_list-wvAHNDRXPPwuDdwQZDzyK_0']//li")))
+                user_respect = ([span.text for span in middle.find_elements_by_xpath("div[2]//div[3]//span") if len(span.text) > 0])
+                user_id = middle.find_element_by_xpath("div//span//a//img").get_attribute("data-userid")
+                user_name = middle.find_element_by_xpath("div//span//a//img").get_attribute("data-username")
+                user_proffesion = middle.find_element_by_xpath("div[2]//div[2]").text
+                print(user_name+" - "+user_proffesion+": "+user_respect[0])
+                # data = self.browser.execute_script(js_get_victim_data)
+                if int(user_respect[0]) > 10000 and int(user_respect[0]) < 200000:
+                    for avoid in people_to_avoid:
+                        if avoid in user_proffesion:
+                            self.exit_club(exit_but, exit_but_id)
+                            break
+                    choose_victim = WebDriverWait(self.browser, 15).until(EC.element_to_be_clickable((By.XPATH, "//div[@id='content_middle']//div[@class='content_style main-content ']//div//div//div//div[@class='pull-left middle-col-4']//div//div[@class='dropdown']//button[@class='btn btn-inverse dropdown-toggle']"))).click()
+                    get_victim = WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"//div[@id='content_middle']//div[@class='content_style main-content ']//div//div//div//div[@class='pull-left middle-col-4']//div//div//ul[@class='dropdown-menu']//li//a"))).click()
+                    kill_him = WebDriverWait(self.browser, 15).until(EC.element_to_be_clickable((By.XPATH, "//div[@id='content_middle']//div[@class='content_style main-content ']//div//div//div//div[@class='pull-left middle-col-4']//button[contains(text(), 'Attack')]"))).click()
+                    self.change_logs("/nightlife/nightclub", "kill", int(user_id))
+                    print(f"Killed {user_name}")
+                    self.exit_club(exit_but, exit_but_id)
+                else:
+                    self.exit_club(exit_but, exit_but_id)  
+        except TimeoutException: #/// ff none comes to club then timeoutexception arises - it is treated as repetition of entering the club
             try:
-                middle = WebDriverWait(self.browser, 8).until(EC.presence_of_element_located((By.XPATH, "//div[@id='content_middle']//div[@class='content_style main-content ']//div//div//ul[@class='unstyled inline user_list nightlife_user_list-wvAHNDRXPPwuDdwQZDzyK_0']//li")))
-                if middle:
-                    data = self.browser.execute_script(js_get_victim_data)
-                    print(f"{data['username']}, prof: {data['proffesion']}, respect: {data['respect']}")
-                    if int(data["respect"]) > 1 and int(data["respect"]) < 100000:
-                        for avoid in people_to_avoid:
-                            if avoid in data["proffesion"]:
-                                self.exit_club(exit_but, exit_but_id)
-                                break
-                        self.change_logs("/nightlife/nightclub", "kill", int(data["userid"]))
-                        # choose_victim = WebDriverWait(self.browser, 15).until(EC.element_to_be_clickable((By.XPATH, "//div[@id='content_middle']//div[@class='content_style main-content ']//div//div//div//div[@class='pull-left middle-col-4']//div//div[@class='dropdown']//button[@class='btn btn-inverse dropdown-toggle']"))).click()
-                        # get_victim = WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, "//div[@id='content_middle']//div[@class='content_style main-content ']//div//div//div//div[@class='pull-left middle-col-4']//div//div[@class='dropdown']//ul[@class='dropdown-menu']//li//a[@role='button']"))).click()
-                        # kill_him = WebDriverWait(self.browser, 15).until(EC.element_to_be_clickable((By.XPATH, "//div[@id='content_middle']//div[@class='content_style main-content ']//div//div//div//div[@class='pull-left middle-col-4']//div//div//button[@class='btn btn-inverse btn-large']"))).click()
-                                
-                        
-                        print(f"Killed {data['username']}")
-                    self.exit_club(exit_but, exit_but_id)
-                    
-                        
-            except TimeoutException: #/// ff none comes to club then timeoutexception arises - it is treated as repetition of entering the club
-                try:
-                    self.exit_club(exit_but, exit_but_id)
-                except:
-                    self.clubs()
+                self.exit_club(exit_but, exit_but_id)
+            except:
+                self.clubs()
                     
     def restore(self, exit_but, exit_id):
         self.change_logs("/nightlife", "enter", str(exit_id[12:]), True)
         self.exit_club(exit_but, exit_id, "delay")
             
     def exit_club(self, exit_but, exit_id, *args):
+        exit_but.click()
         self.change_logs("/nightlife/nightclub", "exit", str(exit_id[12:]))
-        for x in range(2):
-            exit_but.click()
+            
         nightclub_image = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.btn.btn-inverse.btn-small.pull-right")))
         if nightclub_image:
             if "delay" in args:
