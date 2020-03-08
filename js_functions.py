@@ -104,6 +104,8 @@ js_main_requests_pattern = """
                             const post_route = arguments[1]
                             const x_request = arguments[2]
                             const move = arguments[3]
+                            const arg = arguments[4]
+                           
                            
 
                             

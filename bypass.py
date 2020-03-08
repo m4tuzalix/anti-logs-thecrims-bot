@@ -3,7 +3,7 @@ class bypass:
     def __init__(self, route):
         self.route = route
 
-    def logs_bypass(self, action, exit_key):
+    def logs_bypass(self, action, exit_key, *args):
         from random import randint
         self.action = action
         self.exit_key = exit_key
@@ -38,6 +38,8 @@ class bypass:
         elif self.action == "enter":
             for element in ["victim_id","encountered_at","created_at","reason", "exit_key", "e_at"]:
                 del payload[element]
+            if "rob" in args:
+                payload["id"] = int(self.exit_key)
 
         elif self.action == "kill":
             for element in ["id","reason", "exit_key", "e_at"]:
